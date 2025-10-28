@@ -1,3 +1,5 @@
+# BY: HACK UNDERWAY - Versión actualizada para whatsapp-data.p.rapidapi.com
+
 import os
 import sys
 import requests
@@ -9,19 +11,19 @@ from argparse import ArgumentParser
 # Inicializar Colorama
 init(autoreset=True)
 
-# Cargar variables de entorno desde el archivo .env
+# Cargar variables desde .env
 load_dotenv()
 
-# Clave y host de RapidAPI
+# Leer clave y host desde .env
 api_key = os.getenv("RAPIDAPI_KEY")
 api_host = os.getenv("RAPIDAPI_HOST")
 
-# Verificación de variables
+# Validar variables
 if not api_key or not api_host:
-    print(f"{Fore.RED}❌ Faltan variables en .env{Style.RESET_ALL}")
-    print("Debe existir un archivo .env con el siguiente formato:")
+    print(f"{Fore.RED}❌ Faltan variables RAPIDAPI_KEY o RAPIDAPI_HOST en el archivo .env{Style.RESET_ALL}")
+    print("Ejemplo de archivo .env correcto:")
     print("RAPIDAPI_KEY=tu_clave_aqui")
-    print("RAPIDAPI_HOST=whatsapp-data1.p.rapidapi.com")
+    print("RAPIDAPI_HOST=whatsapp-data.p.rapidapi.com")
     sys.exit(1)
 
 # Función para imprimir JSON con colores
@@ -42,23 +44,25 @@ def imprimir_json_coloreado(data, nivel=0):
     else:
         print(f"{indent}{Fore.YELLOW}{data}{Style.RESET_ALL}")
 
-# Función principal de consulta
-def consultar_numero_whatsapp(numero_telefono, endpoint_path="number", timeout_seconds=10):
-    url = f"https://{api_host}/{endpoint_path}/{numero_telefono}"
+# -------------------------------
+#  CONSULTA API WHATSAPP-DATA
+# -------------------------------
+def consultar_numero_whatsapp(numero_telefono, timeout_seconds=10):
+    url = f"https://{api_host}/bizname?phone={numero_telefono}"
 
     headers = {
         "x-rapidapi-key": api_key.strip(),
         "x-rapidapi-host": api_host.strip(),
-        "User-Agent": "whatsapp-data-client/1.0"
+        "User-Agent": "whatsapp-data-client/2.0"
     }
 
-    print(f"{Fore.CYAN}Consultando API:{Style.RESET_ALL} {url}")
+    print(f"{Fore.CYAN}Consultando API:{Style.RESET_ALL} {url}\n")
 
     try:
         response = requests.get(url, headers=headers, timeout=timeout_seconds)
 
         if response.status_code in (401, 403):
-            print(f"{Fore.RED}❌ Error de autenticación ({response.status_code}): API Key inválida o sin permisos.{Style.RESET_ALL}")
+            print(f"{Fore.RED}❌ Error de autenticación ({response.status_code}) — API Key inválida o falta suscripción.{Style.RESET_ALL}")
             try:
                 print(response.json())
             except Exception:
@@ -66,14 +70,14 @@ def consultar_numero_whatsapp(numero_telefono, endpoint_path="number", timeout_s
             return
 
         if response.status_code == 429:
-            print(f"{Fore.RED}⚠️ Límite de peticiones alcanzado (429). Espera o revisa tu plan en RapidAPI.{Style.RESET_ALL}")
+            print(f"{Fore.RED}⚠️  Límite de peticiones alcanzado (429). Espera o revisa tu plan RapidAPI.{Style.RESET_ALL}")
             return
 
         response.raise_for_status()
 
         try:
             data = response.json()
-            print(f"{Fore.GREEN}✅ Respuesta recibida correctamente:{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}✅ Respuesta recibida correctamente:{Style.RESET_ALL}\n")
             imprimir_json_coloreado(data)
         except json.JSONDecodeError:
             print(f"{Fore.RED}Error: la respuesta no es JSON válido.{Style.RESET_ALL}")
@@ -84,17 +88,18 @@ def consultar_numero_whatsapp(numero_telefono, endpoint_path="number", timeout_s
     except requests.exceptions.RequestException as err:
         print(f"{Fore.RED}Error en la solicitud: {err}{Style.RESET_ALL}")
 
-# Menú principal
+# -------------------------------
+#  MENÚ PRINCIPAL
+# -------------------------------
 def main():
-    parser = ArgumentParser(description="Consulta API RapidAPI (whatsapp-data1) para un número o device_count")
-    parser.add_argument("numero", nargs="?", help="Número de teléfono con código de país (ej: 59898297150)")
-    parser.add_argument("--device-count", action="store_true", help="Usar endpoint /device_count/<numero> en lugar de /number/<numero>")
+    parser = ArgumentParser(description="Consulta API RapidAPI (whatsapp-data) para obtener información de un número")
+    parser.add_argument("numero", nargs="?", help="Número de teléfono con código de país (ej: 13022612667)")
     parser.add_argument("--timeout", type=int, default=10, help="Timeout en segundos (por defecto 10)")
     args = parser.parse_args()
 
     print(Fore.GREEN + """
 ╔══════════════════════════════════════╗
-║     CONSULTA WHATSAPP DATA API       ║
+║     CONSULTA WHATSAPP DATA LITO      ║
 ╚══════════════════════════════════════╝
 """ + Style.RESET_ALL)
 
@@ -107,8 +112,7 @@ def main():
         print(f"{Fore.RED}Debe ingresar un número válido.{Style.RESET_ALL}")
         sys.exit(1)
 
-    endpoint = "device_count" if args.device_count else "number"
-    consultar_numero_whatsapp(numero, endpoint_path=endpoint, timeout_seconds=args.timeout)
+    consultar_numero_whatsapp(numero, timeout_seconds=args.timeout)
 
 if __name__ == "__main__":
     main()
