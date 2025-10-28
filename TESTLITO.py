@@ -1,5 +1,3 @@
-# BY: HACK UNDERWAY - Versión actualizada para whatsapp-data.p.rapidapi.com
-
 import os
 import sys
 import requests
