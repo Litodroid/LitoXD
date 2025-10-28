@@ -1,4 +1,3 @@
-# BY: HACK UNDERWAY  (mejorado)
 import os
 import sys
 import requests
@@ -116,7 +115,7 @@ def main():
 |[_]|    
 |:::|    
 |:::|    
-`\\   \\   
+`\\LITO\\   
   \\_=_\\ 
 Consulta de datos de número de WhatsApp
 """ + Style.RESET_ALL)
